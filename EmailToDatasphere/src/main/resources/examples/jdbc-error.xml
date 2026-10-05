@@ -1,0 +1,9 @@
+<root>
+  <Statement>
+    <CronacleStatus action='SQL_DML'>
+      <access>MERGE INTO "TEST_SCHEMA"."IBP_Cronacle_Status" T USING (SELECT '873e92d8d0413812b2921898385a3084' AS "ID", 'CHAIN_EXAMPLE_CUSTOMER_MD_PRODUCT_&amp;_SOURCE_RATIO' AS "P_CHAIN", 'Error' AS "Status", 'Example failure: source file isn''t available.' AS "Reason", TO_DATE('2026-10-01', 'YYYY-MM-DD') AS "Date", TO_TIMESTAMP('2026-10-01 04:00:44.0000000', 'YYYY-MM-DD HH24:MI:SS.FF7') AS "Time" FROM DUMMY) S ON (T."ID" = S."ID" AND T."P_CHAIN" = S."P_CHAIN" AND T."Date" = S."Date" AND T."Time" = S."Time")
+WHEN MATCHED THEN UPDATE SET "Status" = S."Status", "Reason" = S."Reason"
+WHEN NOT MATCHED THEN INSERT ("ID", "P_CHAIN", "Status", "Reason", "Date", "Time") VALUES (S."ID", S."P_CHAIN", S."Status", S."Reason", S."Date", S."Time")</access>
+    </CronacleStatus>
+  </Statement>
+</root>

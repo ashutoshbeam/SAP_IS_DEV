@@ -111,7 +111,7 @@ String plainText(String body) {
         if (local in ['br','p','div','tr','table','blockquote','li','hr']) return '\n'
         if (local in ['td','th']) return ' '
         return ''
-    }
+        }
     // Decode AFTER stripping markup so escaped text is never interpreted as a tag.
     Map entities = [amp:'&', lt:'<', gt:'>', quot:'"', apos:"'", nbsp:' ',
                     ensp:' ', emsp:' ', thinsp:' ', ndash:'\u2013', mdash:'\u2014',

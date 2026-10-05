@@ -1,2 +1,573 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:ifl="http:///com.sap.ifl.model/Ifl.xsd" id="Definitions_1"><bpmn2:collaboration id="Collaboration_1" name="Default Collaboration"><bpmn2:extensionElements><ifl:property><key>namespaceMapping</key><value /></ifl:property><ifl:property><key>httpSessionHandling</key><value>None</value></ifl:property><ifl:property><key>returnExceptionToSender</key><value>false</value></ifl:property><ifl:property><key>log</key><value>All events</value></ifl:property><ifl:property><key>componentVersion</key><value>1.2</value></ifl:property><ifl:property><key>allowedHeaderList</key><value>Date|Subject|From|Message-ID</value></ifl:property><ifl:property><key>cmdVariantUri</key><value>ctype::IFlowVariant/cname::IFlowConfiguration/version::1.2.4</value></ifl:property></bpmn2:extensionElements><bpmn2:participant id="Sender" name="Mailbox - add Mail IMAP adapter" ifl:type="EndpointSender"><bpmn2:extensionElements><ifl:property><key>ifl:type</key><value>EndpointSender</value></ifl:property></bpmn2:extensionElements></bpmn2:participant><bpmn2:participant id="Receiver" name="Datasphere - add JDBC adapter" ifl:type="EndpointReceiver"><bpmn2:extensionElements><ifl:property><key>ifl:type</key><value>EndpointReceiver</value></ifl:property></bpmn2:extensionElements></bpmn2:participant><bpmn2:participant id="Participant_Process" name="Cronacle email to JDBC" processRef="Process_1" ifl:type="IntegrationProcess" /></bpmn2:collaboration><bpmn2:process id="Process_1" name="Cronacle email to JDBC"><bpmn2:extensionElements><ifl:property><key>transactionTimeout</key><value>30</value></ifl:property><ifl:property><key>componentVersion</key><value>1.2</value></ifl:property><ifl:property><key>transactionalHandling</key><value>Not Required</value></ifl:property><ifl:property><key>cmdVariantUri</key><value>ctype::FlowElementVariant/cname::IntegrationProcess/version::1.2.1</value></ifl:property></bpmn2:extensionElements><bpmn2:startEvent id="Start" name="Email"><bpmn2:extensionElements><ifl:property><key>componentVersion</key><value>1.0</value></ifl:property><ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::MessageStartEvent/version::1.0</value></ifl:property></bpmn2:extensionElements><bpmn2:outgoing>Flow_1</bpmn2:outgoing><bpmn2:messageEventDefinition /></bpmn2:startEvent><bpmn2:callActivity id="Configure" name="Mapping settings"><bpmn2:extensionElements><ifl:property><key>activityType</key><value>Script</value></ifl:property><ifl:property><key>script</key><value>ConfigureMapping.groovy</value></ifl:property><ifl:property><key>scriptFunction</key><value>processData</value></ifl:property><ifl:property><key>scriptType</key><value>Groovy</value></ifl:property><ifl:property><key>scriptBundleId</key><value /></ifl:property><ifl:property><key>componentVersion</key><value>1.1</value></ifl:property><ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1</value></ifl:property></bpmn2:extensionElements><bpmn2:incoming>Flow_1</bpmn2:incoming><bpmn2:outgoing>Flow_2</bpmn2:outgoing></bpmn2:callActivity><bpmn2:callActivity id="Extract" name="Extract alert and error log"><bpmn2:extensionElements><ifl:property><key>activityType</key><value>Script</value></ifl:property><ifl:property><key>script</key><value>ExtractCronacleAlert.groovy</value></ifl:property><ifl:property><key>scriptFunction</key><value>processData</value></ifl:property><ifl:property><key>scriptType</key><value>Groovy</value></ifl:property><ifl:property><key>scriptBundleId</key><value /></ifl:property><ifl:property><key>componentVersion</key><value>1.1</value></ifl:property><ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1</value></ifl:property></bpmn2:extensionElements><bpmn2:incoming>Flow_2</bpmn2:incoming><bpmn2:outgoing>Flow_3</bpmn2:outgoing></bpmn2:callActivity><bpmn2:callActivity id="MapJdbc" name="Build HANA JDBC payload"><bpmn2:extensionElements><ifl:property><key>activityType</key><value>Script</value></ifl:property><ifl:property><key>script</key><value>BuildJdbcPayload.groovy</value></ifl:property><ifl:property><key>scriptFunction</key><value>processData</value></ifl:property><ifl:property><key>scriptType</key><value>Groovy</value></ifl:property><ifl:property><key>scriptBundleId</key><value /></ifl:property><ifl:property><key>componentVersion</key><value>1.1</value></ifl:property><ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1</value></ifl:property></bpmn2:extensionElements><bpmn2:incoming>Flow_3</bpmn2:incoming><bpmn2:outgoing>Flow_4</bpmn2:outgoing></bpmn2:callActivity><bpmn2:endEvent id="End" name="Write to Datasphere"><bpmn2:extensionElements><ifl:property><key>componentVersion</key><value>1.1</value></ifl:property><ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value></ifl:property></bpmn2:extensionElements><bpmn2:incoming>Flow_4</bpmn2:incoming><bpmn2:messageEventDefinition /></bpmn2:endEvent><bpmn2:sequenceFlow id="Flow_1" sourceRef="Start" targetRef="Configure" /><bpmn2:sequenceFlow id="Flow_2" sourceRef="Configure" targetRef="Extract" /><bpmn2:sequenceFlow id="Flow_3" sourceRef="Extract" targetRef="MapJdbc" /><bpmn2:sequenceFlow id="Flow_4" sourceRef="MapJdbc" targetRef="End" /></bpmn2:process><bpmndi:BPMNDiagram id="Diagram_1"><bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collaboration_1"><bpmndi:BPMNShape id="Shape_Sender" bpmnElement="Sender"><dc:Bounds x="40" y="100" width="110" height="140" /></bpmndi:BPMNShape><bpmndi:BPMNShape id="Shape_Participant_Process" bpmnElement="Participant_Process"><dc:Bounds x="210" y="60" width="850" height="230" /></bpmndi:BPMNShape><bpmndi:BPMNShape id="Shape_Receiver" bpmnElement="Receiver"><dc:Bounds x="1120" y="100" width="110" height="140" /></bpmndi:BPMNShape><bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start"><dc:Bounds x="245" y="145" width="32" height="32" /></bpmndi:BPMNShape><bpmndi:BPMNShape id="Shape_Configure" bpmnElement="Configure"><dc:Bounds x="320" y="131" width="130" height="60" /></bpmndi:BPMNShape><bpmndi:BPMNShape id="Shape_Extract" bpmnElement="Extract"><dc:Bounds x="500" y="131" width="145" height="60" /></bpmndi:BPMNShape><bpmndi:BPMNShape id="Shape_MapJdbc" bpmnElement="MapJdbc"><dc:Bounds x="705" y="131" width="145" height="60" /></bpmndi:BPMNShape><bpmndi:BPMNShape id="Shape_End" bpmnElement="End"><dc:Bounds x="960" y="145" width="32" height="32" /></bpmndi:BPMNShape><bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1"><di:waypoint x="277" y="161" /><di:waypoint x="320" y="161" /></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2"><di:waypoint x="450" y="161" /><di:waypoint x="500" y="161" /></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3"><di:waypoint x="645" y="161" /><di:waypoint x="705" y="161" /></bpmndi:BPMNEdge><bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4"><di:waypoint x="850" y="161" /><di:waypoint x="960" y="161" /></bpmndi:BPMNEdge></bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn2:definitions>
+<?xml version="1.0" encoding="UTF-8"?><bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:ifl="http:///com.sap.ifl.model/Ifl.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1">
+    <bpmn2:collaboration id="Collaboration_1" name="Default Collaboration">
+        <bpmn2:extensionElements>
+            <ifl:property>
+                <key>namespaceMapping</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>httpSessionHandling</key>
+                <value>None</value>
+            </ifl:property>
+            <ifl:property>
+                <key>accessControlMaxAge</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>returnExceptionToSender</key>
+                <value>false</value>
+            </ifl:property>
+            <ifl:property>
+                <key>log</key>
+                <value>All events</value>
+            </ifl:property>
+            <ifl:property>
+                <key>corsEnabled</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>exposedHeaders</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>componentVersion</key>
+                <value>1.2</value>
+            </ifl:property>
+            <ifl:property>
+                <key>allowedHeaderList</key>
+                <value>Date|Subject|From|Message-ID</value>
+            </ifl:property>
+            <ifl:property>
+                <key>ServerTrace</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>allowedOrigins</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>accessControlAllowCredentials</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>allowedHeaders</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>allowedMethods</key>
+                <value/>
+            </ifl:property>
+            <ifl:property>
+                <key>cmdVariantUri</key>
+                <value>ctype::IFlowVariant/cname::IFlowConfiguration/version::1.2.4</value>
+            </ifl:property>
+        </bpmn2:extensionElements>
+        <bpmn2:participant id="Sender" ifl:type="EndpointSender" name="Mail_Sender">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>enableBasicAuthentication</key>
+                    <value>false</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ifl:type</key>
+                    <value>EndpointSender</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:participant>
+        <bpmn2:participant id="Participant_9" ifl:type="EndpointRecevier" name="RCV_Datasphere">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>ifl:type</key>
+                    <value>EndpointRecevier</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:participant>
+        <bpmn2:participant id="Participant_Process_1" ifl:type="IntegrationProcess" name="Cronacle email to JDBC" processRef="Process_1">
+            <bpmn2:extensionElements/>
+        </bpmn2:participant>
+        <bpmn2:messageFlow id="MessageFlow_5" name="Mail" sourceRef="Sender" targetRef="Start">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>server</key>
+                    <value>{{mail_addr}}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>disconnect</key>
+                    <value>1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>Description</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>archiveMailFolder</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>auth</key>
+                    <value>oauth</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentNS</key>
+                    <value>sap</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>selectionReadFlag</key>
+                    <value>unread</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ssl</key>
+                    <value>imaps</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>timeout</key>
+                    <value>3000</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>Name</key>
+                    <value>Mail</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>TransportProtocolVersion</key>
+                    <value>1.14.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVName</key>
+                    <value>external</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>proxyPort</key>
+                    <value>8080</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>postProcessing</key>
+                    <value>mark</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>locationId</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>mimeDecodeHeaders</key>
+                    <value>1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>maxMessagesPerPoll</key>
+                    <value>20</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>MessageProtocol</key>
+                    <value>Not Applicable</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVId</key>
+                    <value>1.14.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>direction</key>
+                    <value>Sender</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentType</key>
+                    <value>Mail</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>lockDuration</key>
+                    <value>60</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>proxyProtocol</key>
+                    <value>socks5</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>proxyType</key>
+                    <value>none</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>proxyAlias</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.14</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>removeAttachments</key>
+                    <value>0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>proxyHost</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>forwardOriginalMail</key>
+                    <value>0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>system</key>
+                    <value>Mail_Sender</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>folder</key>
+                    <value>{{folder}}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>scheduleKey</key>
+                    <value>&lt;row&gt;&lt;cell&gt;dayValue&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;monthValue&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;yearValue&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;dateType&lt;/cell&gt;&lt;cell&gt;DAILY&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;secondValue&lt;/cell&gt;&lt;cell&gt;0&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;minutesValue&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;hourValue&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;toInterval&lt;/cell&gt;&lt;cell&gt;24&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;fromInterval&lt;/cell&gt;&lt;cell&gt;0&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;OnEveryMinute&lt;/cell&gt;&lt;cell&gt;1&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;timeType&lt;/cell&gt;&lt;cell&gt;TIME_INTERVAL&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;timeZone&lt;/cell&gt;&lt;cell&gt;( UTC 0:00 ) Greenwich Mean Time(Etc/GMT)&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;throwExceptionOnExpiry&lt;/cell&gt;&lt;cell&gt;true&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;second&lt;/cell&gt;&lt;cell&gt;0/10&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;minute&lt;/cell&gt;&lt;cell&gt;*&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;hour&lt;/cell&gt;&lt;cell&gt;0-24&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;day_of_month&lt;/cell&gt;&lt;cell&gt;?&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;month&lt;/cell&gt;&lt;cell&gt;*&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;dayOfWeek&lt;/cell&gt;&lt;cell&gt;*&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;year&lt;/cell&gt;&lt;cell&gt;*&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;startAt&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;endAt&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;attributeBehaviour&lt;/cell&gt;&lt;cell&gt;isScheduleOnDayRequired,isScheduleRecurRequired&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;triggerType&lt;/cell&gt;&lt;cell&gt;cron&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;noOfSchedules&lt;/cell&gt;&lt;cell&gt;1&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;schedule1&lt;/cell&gt;&lt;cell&gt;0+0/1+0-23+?+*+*+*&amp;amp;trigger.timeZone=Etc/GMT&lt;/cell&gt;&lt;/row&gt;</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>TransportProtocol</key>
+                    <value>IMAP</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>tokenCredential</key>
+                    <value>{{cred_name}}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::AdapterVariant/cname::sap:Mail/tp::IMAP/mp::Not Applicable/direction::Sender/version::1.14.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>user</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>MessageProtocolVersion</key>
+                    <value>1.14.0</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:messageFlow>
+        <bpmn2:messageFlow id="MessageFlow_11" name="JDBC" sourceRef="ServiceTask_6" targetRef="Participant_9">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>queryTimeout</key>
+                    <value>{{resp_tout}}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>emptyStringSupport</key>
+                    <value>true</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentType</key>
+                    <value>JDBC</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>Description</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentNS</key>
+                    <value>sap</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>pageSize</key>
+                    <value>100000</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>Vendor</key>
+                    <value>SAP</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.7</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>Name</key>
+                    <value>JDBC</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>TransportProtocolVersion</key>
+                    <value>1.7.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVName</key>
+                    <value>external</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>batchOperation</key>
+                    <value>atomic</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>dateWithBindMode</key>
+                    <value>false</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>sqlBindMode</key>
+                    <value>false</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>system</key>
+                    <value>RCV_Datasphere</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>batchMode</key>
+                    <value>false</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>alias</key>
+                    <value>{{ds_alias}}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>TransportProtocol</key>
+                    <value>JDBC</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::AdapterVariant/cname::JDBC/vendor::SAP/tp::JDBC/mp::JDBC/direction::Receiver/version::1.7.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>connectionTimeout</key>
+                    <value>{{conn_tout}}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>MessageProtocol</key>
+                    <value>JDBC</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVId</key>
+                    <value>1.7.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>MessageProtocolVersion</key>
+                    <value>1.7.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>direction</key>
+                    <value>Receiver</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:messageFlow>
+    </bpmn2:collaboration>
+    <bpmn2:process id="Process_1" name="Cronacle email to JDBC">
+        <bpmn2:extensionElements>
+            <ifl:property>
+                <key>transactionTimeout</key>
+                <value>30</value>
+            </ifl:property>
+            <ifl:property>
+                <key>componentVersion</key>
+                <value>1.2</value>
+            </ifl:property>
+            <ifl:property>
+                <key>cmdVariantUri</key>
+                <value>ctype::FlowElementVariant/cname::IntegrationProcess/version::1.2.1</value>
+            </ifl:property>
+            <ifl:property>
+                <key>transactionalHandling</key>
+                <value>Not Required</value>
+            </ifl:property>
+        </bpmn2:extensionElements>
+        <bpmn2:callActivity id="MapJdbc" name="Build HANA JDBC payload">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>scriptFunction</key>
+                    <value>processData</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>scriptBundleId</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>2.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Script</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::GroovyScript/version::2.0.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>subActivityType</key>
+                    <value>GroovyScript</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>script</key>
+                    <value>v2/BuildJdbcPayload.groovy</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>Flow_3</bpmn2:incoming>
+            <bpmn2:outgoing>Flow_4</bpmn2:outgoing>
+        </bpmn2:callActivity>
+        <bpmn2:callActivity id="Extract" name="Extract alert and error log">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>scriptFunction</key>
+                    <value>processData</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>scriptBundleId</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>2.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Script</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::GroovyScript/version::2.0.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>subActivityType</key>
+                    <value>GroovyScript</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>script</key>
+                    <value>v2/ExtractCronacleAlert.groovy</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>Flow_2</bpmn2:incoming>
+            <bpmn2:outgoing>Flow_3</bpmn2:outgoing>
+        </bpmn2:callActivity>
+        <bpmn2:callActivity id="Configure" name="Mapping settings">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>scriptFunction</key>
+                    <value>processData</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>scriptBundleId</key>
+                    <value/>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>2.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Script</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::GroovyScript/version::2.0.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>subActivityType</key>
+                    <value>GroovyScript</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>script</key>
+                    <value>v2/ConfigureMapping.groovy</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>Flow_1</bpmn2:incoming>
+            <bpmn2:outgoing>Flow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>
+        <bpmn2:serviceTask id="ServiceTask_6" name="Send  Insert DS">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>ExternalCall</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>Flow_4</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_7</bpmn2:outgoing>
+        </bpmn2:serviceTask>
+        <bpmn2:endEvent id="End" name="Write to Datasphere">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_7</bpmn2:incoming>
+            <bpmn2:messageEventDefinition/>
+        </bpmn2:endEvent>
+        <bpmn2:startEvent id="Start" name="Email">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::MessageStartEvent/version::1.0</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:outgoing>Flow_1</bpmn2:outgoing>
+            <bpmn2:messageEventDefinition/>
+        </bpmn2:startEvent>
+        <bpmn2:sequenceFlow id="Flow_4" sourceRef="MapJdbc" targetRef="ServiceTask_6"/>
+        <bpmn2:sequenceFlow id="Flow_3" sourceRef="Extract" targetRef="MapJdbc"/>
+        <bpmn2:sequenceFlow id="Flow_2" sourceRef="Configure" targetRef="Extract"/>
+        <bpmn2:sequenceFlow id="SequenceFlow_7" sourceRef="ServiceTask_6" targetRef="End"/>
+        <bpmn2:sequenceFlow id="Flow_1" sourceRef="Start" targetRef="Configure"/>
+    </bpmn2:process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Collaboration Diagram">
+        <bpmndi:BPMNPlane bpmnElement="Collaboration_1" id="BPMNPlane_1">
+            <bpmndi:BPMNShape bpmnElement="Participant_9" id="BPMNShape_Participant_9">
+                <dc:Bounds height="140.0" width="100.0" x="895.0" y="-2.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ServiceTask_6" id="BPMNShape_ServiceTask_6">
+                <dc:Bounds height="60.0" width="100.0" x="889.0" y="246.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="Start" id="BPMNShape_Start">
+                <dc:Bounds height="32.0" width="32.0" x="245.0" y="260.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="End" id="BPMNShape_End">
+                <dc:Bounds height="32.0" width="32.0" x="1017.0" y="260.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="Extract" id="BPMNShape_Extract">
+                <dc:Bounds height="60.0" width="145.0" x="500.0" y="246.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="Configure" id="BPMNShape_Configure">
+                <dc:Bounds height="60.0" width="130.0" x="320.0" y="246.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="Participant_Process_1" id="BPMNShape_Participant_Process_1">
+                <dc:Bounds height="230.0" width="923.0" x="210.0" y="175.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="MapJdbc" id="BPMNShape_MapJdbc">
+                <dc:Bounds height="60.0" width="145.0" x="705.0" y="246.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="Sender" id="BPMNShape_Sender">
+                <dc:Bounds height="140.0" width="110.0" x="44.0" y="206.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge bpmnElement="Flow_4" id="BPMNEdge_Flow_4" sourceElement="BPMNShape_MapJdbc" targetElement="BPMNShape_ServiceTask_6">
+                <di:waypoint x="777.5" xsi:type="dc:Point" y="276.0"/>
+                <di:waypoint x="939.0" xsi:type="dc:Point" y="276.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_2" id="BPMNEdge_Flow_2" sourceElement="BPMNShape_Configure" targetElement="BPMNShape_Extract">
+                <di:waypoint x="450.0" xsi:type="dc:Point" y="276.0"/>
+                <di:waypoint x="500.0" xsi:type="dc:Point" y="276.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_3" id="BPMNEdge_Flow_3" sourceElement="BPMNShape_Extract" targetElement="BPMNShape_MapJdbc">
+                <di:waypoint x="645.0" xsi:type="dc:Point" y="276.0"/>
+                <di:waypoint x="705.0" xsi:type="dc:Point" y="276.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="Flow_1" id="BPMNEdge_Flow_1" sourceElement="BPMNShape_Start" targetElement="BPMNShape_Configure">
+                <di:waypoint x="277.0" xsi:type="dc:Point" y="276.0"/>
+                <di:waypoint x="320.0" xsi:type="dc:Point" y="276.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="SequenceFlow_7" id="BPMNEdge_SequenceFlow_7" sourceElement="BPMNShape_ServiceTask_6" targetElement="BPMNShape_End">
+                <di:waypoint x="939.0" xsi:type="dc:Point" y="276.0"/>
+                <di:waypoint x="1033.0" xsi:type="dc:Point" y="276.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="MessageFlow_5" id="BPMNEdge_MessageFlow_5" sourceElement="BPMNShape_Sender" targetElement="BPMNShape_Start">
+                <di:waypoint x="99.0" xsi:type="dc:Point" y="276.0"/>
+                <di:waypoint x="261.0" xsi:type="dc:Point" y="276.0"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="MessageFlow_11" id="BPMNEdge_MessageFlow_11" sourceElement="BPMNShape_ServiceTask_6" targetElement="BPMNShape_Participant_9">
+                <di:waypoint x="942.0" xsi:type="dc:Point" y="276.0"/>
+                <di:waypoint x="942.0" xsi:type="dc:Point" y="68.0"/>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

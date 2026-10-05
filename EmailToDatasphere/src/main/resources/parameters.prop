@@ -1,0 +1,8 @@
+#
+#Mon Oct 05 14:33:36 UTC 2026
+conn_tout=10
+cred_name=sapinventory_Email_OAuth2 Authorization Code
+ds_alias=Datasphere_IT_TBL_MNT_IS
+folder=SAPCIDS/CronacleIBP
+mail_addr=outlook.office365.com
+resp_tout=10
