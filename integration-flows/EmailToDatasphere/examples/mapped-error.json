@@ -1,0 +1,8 @@
+{
+    "ID": "873e92d8d0413812b2921898385a3084",
+    "P_CHAIN": "CHAIN_EXAMPLE_CUSTOMER_MD_PRODUCT_&_SOURCE_RATIO",
+    "Status": "Error",
+    "Reason": "Example failure: source file isn't available.",
+    "Date": "2026-10-01",
+    "Time": "2026-10-01 04:00:44.0000000"
+}

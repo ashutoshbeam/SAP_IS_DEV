@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+SAP-BundleType: IntegrationFlow
+SAP-NodeType: IFLMAP
+SAP-RuntimeProfile: iflmap
+Bundle-Name: EmailToDatasphere
+Bundle-SymbolicName: EmailToDatasphere; singleton:=true
+Bundle-Version: 1.0.0
+
