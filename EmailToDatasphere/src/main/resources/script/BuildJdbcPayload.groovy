@@ -1,7 +1,6 @@
-import com.sap.gateway.ip.core.customdev.util.Message
 import groovy.xml.MarkupBuilder
 
-Message processData(Message message) {
+def processData(def message) {
     Map cfg = message.getProperties()
     Map row = cfg.CronacleRow as Map
     if (!row) throw new IllegalArgumentException('Run ExtractCronacleAlert before BuildJdbcPayload')
@@ -10,12 +9,12 @@ Message processData(Message message) {
     if (!schema) throw new IllegalArgumentException('Set TargetSchema to the writable Open SQL schema')
     String target = identifier(schema) + '.' + identifier(table)
     List keys = ['ID','P_CHAIN','Date','Time']
-    List updates = ['Status','Reason']
+    List updates = ['Status','Reason','modifiedAt','modifiedBy']
     String columns = row.keySet().collect { identifier(it.toString()) }.join(', ')
     String source = row.collect { k,v ->
-        String value = literal(v.toString())
+        String value = v == null ? 'CAST(NULL AS NVARCHAR(255))' : literal(v.toString())
         if (k == 'Date') value = "TO_DATE(${value}, 'YYYY-MM-DD')"
-        else if (k == 'Time') value = "TO_TIMESTAMP(${value}, 'YYYY-MM-DD HH24:MI:SS.FF7')"
+        else if (k in ['Time','createdAt','modifiedAt']) value = "TO_TIMESTAMP(${value}, 'YYYY-MM-DD HH24:MI:SS.FF7')"
         value + ' AS ' + identifier(k.toString())
     }.join(', ')
     String sql = 'MERGE INTO ' + target + ' T USING (SELECT ' + source + ' FROM DUMMY) S ON (' +

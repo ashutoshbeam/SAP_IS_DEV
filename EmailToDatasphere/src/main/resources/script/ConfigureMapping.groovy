@@ -1,6 +1,5 @@
-import com.sap.gateway.ip.core.customdev.util.Message
 
-Message processData(Message message) {
+def processData(def message) {
     // Set your actual writable schema here after import. No credentials belong here.
     Map defaults = [
         TargetSchema: 'REPLACE_WITH_OPEN_SQL_SCHEMA',

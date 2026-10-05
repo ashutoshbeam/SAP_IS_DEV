@@ -4,5 +4,9 @@
     "Status": "Error",
     "Reason": "Example failure: source file isn't available.",
     "Date": "2026-10-01",
-    "Time": "2026-10-01 04:00:44.0000000"
+    "Time": "2026-10-01 04:00:44.0000000",
+    "createdAt": "2026-10-01 04:00:44.0000000",
+    "createdBy": null,
+    "modifiedAt": "2026-10-01 04:00:44.0000000",
+    "modifiedBy": null
 }

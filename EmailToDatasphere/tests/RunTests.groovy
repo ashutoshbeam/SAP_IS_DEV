@@ -30,7 +30,7 @@ test('Completed screenshot mapping and UTC conversion') {
     assert m.properties.CronacleRow.Date == '2026-10-05'
     assert m.properties.CronacleRow.Time == '2026-10-05 05:25:23.0000000'
     assert m.properties.CronacleRow.ID ==~ /[a-f0-9]{32}/
-    assert !m.properties.CronacleRow.containsKey('modifiedBy')
+    assert m.properties.CronacleRow.containsKey('modifiedBy')
 }
 test('HTML, ampersand, entity decoding and ErrorLog.txt') {
     def m = make(error.replace('\n','<br>').replace('&','&amp;').replace('CHAIN_EXAMPLE','<b>CHAIN_EXAMPLE').replace(' [200','</b> [311'))
@@ -123,12 +123,13 @@ test('Long chain and unsafe table identifiers rejected') {
     def m=make(completed); extract.processData(m); m.properties.TargetSchema='X"; DROP TABLE X;--'
     failure { jdbc.processData(m) }
 }
-test('Only requested business fields plus required ID are mapped') {
+test('Business fields, ID and email audit fields are mapped') {
     def m=make(completed)
     extract.processData(m); jdbc.processData(m)
-    assert m.properties.CronacleRow.keySet() as Set == ['ID','P_CHAIN','Status','Reason','Date','Time'] as Set
-    assert !m.body.contains('modifiedBy')
-    assert !m.body.contains('createdAt')
+    assert m.properties.CronacleRow.keySet() as Set == ['ID','P_CHAIN','Status','Reason','Date','Time','createdAt','createdBy','modifiedAt','modifiedBy'] as Set
+    assert m.properties.CronacleRow.createdAt == m.properties.CronacleRow.Time
+    assert m.body.contains('modifiedBy')
+    assert m.body.contains('createdAt')
 }
 test('Outlook day-first, abbreviated months, Unicode spaces and adjacent header') {
     ['Monday, 5 October 2026 10:55 AM', 'Mon 5 Oct 2026 10:55 AM',
@@ -178,6 +179,31 @@ test('HTML extraction without desktop APIs: entities, comments and quoted attrib
     String source = new File('src/main/resources/script/ExtractCronacleAlert.groovy').getText('UTF-8')
     assert !source.contains('javax.swing') && !source.contains('sun.awt') && !source.contains('ParserDelegator')
 }
+test('Original sender is used for forwarded email audit fields') {
+    def m=make('From: Original <original@example.invalid>\n'+completed)
+    m.headers.From='forwarder@example.invalid'
+    extract.processData(m)
+    assert m.properties.CronacleRow.createdBy=='original@example.invalid'
+    assert m.properties.CronacleRow.modifiedBy=='original@example.invalid'
+    assert m.properties.CronacleRow.createdAt=='2026-10-05 05:25:23.0000000'
+    jdbc.processData(m)
+    String sql=new XmlSlurper().parseText(m.body).Statement.CronacleStatus.access.text()
+    String update=sql.split('WHEN MATCHED')[1].split('WHEN NOT MATCHED')[0]
+    assert update.contains('modifiedBy') && !update.contains('createdBy') && !update.contains('createdAt')
+}
+test('Direct email audit sender and missing sender') {
+    def m=make(completed); m.headers.From='Direct <direct@example.invalid>'; extract.processData(m)
+    assert m.properties.CronacleRow.createdBy=='direct@example.invalid'
+    def missing=make(completed); extract.processData(missing); jdbc.processData(missing)
+    assert missing.properties.CronacleRow.createdBy==null
+    assert missing.body.contains('CAST(NULL AS NVARCHAR(255))')
+}
+test('All entry points accept a message unrelated to the legacy SAP class') {
+    def m=new IndependentMessage(body:completed, properties:[TargetSchema:'TEST_SCHEMA'], headers:[From:'test@example.invalid'])
+    shell.parse(new File('src/main/resources/script/ConfigureMapping.groovy')).processData(m)
+    extract.processData(m); jdbc.processData(m)
+    assert m.body.contains('MERGE INTO')
+}
 new File('examples').mkdirs()
 def example=make(error); example.attachments.x=attachment('ErrorLog.txt',"Example failure: source file isn't available.")
 extract.processData(example)
@@ -185,3 +211,14 @@ new File('examples/mapped-error.json').setText(JsonOutput.prettyPrint(example.bo
 jdbc.processData(example)
 new File('examples/jdbc-error.xml').setText(example.body,'UTF-8')
 println("${passed} tests passed. SAP tenant import and live JDBC execution still require validation.")
+
+// Deliberately does not extend the legacy Message test double.
+class IndependentMessage {
+    Object body
+    Map properties=[:]
+    Map headers=[:]
+    Map attachments=[:]
+    Object getBody(Class type) { body.toString() }
+    void setProperty(String name,Object value) { properties[name]=value }
+    void setHeader(String name,Object value) { headers[name]=value }
+}

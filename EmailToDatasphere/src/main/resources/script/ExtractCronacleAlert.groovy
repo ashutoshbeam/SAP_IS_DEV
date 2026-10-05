@@ -1,11 +1,10 @@
-import com.sap.gateway.ip.core.customdev.util.Message
 import groovy.json.JsonOutput
 import java.time.*
 import java.time.format.*
 import java.nio.charset.*
 
 // The Mail adapter must provide the decoded body and attachments (not raw MIME).
-Message processData(Message message) {
+def processData(def message) {
     Map cfg = message.getProperties()
     String body = message.getBody(String) ?: ''
     if (body.length() > 2000000) throw new IllegalArgumentException('Email body exceeds 2 MB character limit')
@@ -72,14 +71,29 @@ Message processData(Message message) {
     def local = eventTime.atZone(storageZone)
     String timestamp = local.format(DateTimeFormatter.ofPattern('uuuu-MM-dd HH:mm:ss.SSSSSSS'))
     String id = UUID.nameUUIDFromBytes(('Cronacle|' + alert.name + '|' + alert.run + '|' + eventTime.toString()).getBytes('UTF-8')).toString().replace('-', '')
+    String sender = emailSender(text.substring(0, alert.position as int), message.getHeaders())
     Map row = [ID:id, P_CHAIN:alert.name, Status:alert.status, Reason:reason,
-               Date:local.toLocalDate().toString(), Time:timestamp]
+               Date:local.toLocalDate().toString(), Time:timestamp,
+               createdAt:timestamp, createdBy:sender, modifiedAt:timestamp, modifiedBy:sender]
     message.setProperty('CronacleRow', row)
     message.setProperty('CronacleRunId', alert.run)
     message.setProperty('CronacleTimestampSource', timeSource)
     message.setBody(JsonOutput.toJson(row))
     message.setHeader('Content-Type', 'application/json; charset=UTF-8')
     return message
+}
+
+String emailSender(String prefix, Map headers) {
+    def from = prefix =~ /(?im)^\s*From\s*:\s*([^\r\n]+)/
+    List values = []
+    while (from.find()) values << from.group(1).trim()
+    String raw = values ? values[-1] : headers.find { k,v -> k.toString().equalsIgnoreCase('From') }?.value?.toString()
+    if (!raw) return null
+    def address = raw =~ /[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?/
+    if (!address.find()) return null
+    String result = address.group()
+    if (result.length() > 255) throw new IllegalArgumentException('Sender email exceeds audit field length 255')
+    return result
 }
 
 String plainText(String body) {
