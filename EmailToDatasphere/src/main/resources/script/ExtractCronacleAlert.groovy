@@ -34,7 +34,7 @@ Message processData(Message message) {
         List sentValues = []
         while (sent.find()) sentValues << sent.group(1).trim()
         if (sentValues) {
-            eventTime = parseSent(sentValues[-1], sourceZone)
+            eventTime = parseSent(sentValues[-1], sourceZone, (cfg.SentDatePattern ?: '').toString())
             timeSource = 'Forwarded Sent'
         } else {
             def dateEntry = message.getHeaders().find { k, v -> k.toString().equalsIgnoreCase('Date') }
@@ -108,19 +108,43 @@ String plainText(String body) {
     return out.toString().replace('\u00a0', ' ')
 }
 
-Instant parseSent(String input, ZoneId defaultZone) {
+Instant parseSent(String input, ZoneId defaultZone, String customPattern = '') {
+    // Outlook can use NBSP/narrow NBSP, bidi marks, abbreviated months and day-first dates.
+    String value = input.replaceAll(/[\u00a0\u202f]/, ' ').replaceAll(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/, '')
+        .replaceAll(/\s+/, ' ').trim()
+    // Some HTML messages put adjacent forwarded header fields on the same line.
+    value = value.replaceFirst(/(?i)\s+(?:To|Cc|Bcc|Subject)\s*:.*$/, '').trim()
+    try { return OffsetDateTime.parse(value).toInstant() } catch (DateTimeParseException ignored) { }
+    try { return ZonedDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant() } catch (DateTimeParseException ignored) { }
     ZoneId zone = defaultZone
-    def offset = input =~ /(?i)\(UTC([+-]\d{2}:\d{2})\)/
-    if (offset.find()) zone = ZoneOffset.of(offset.group(1))
-    String value = input.replaceFirst(/\s*\(UTC.*$/, '').trim().replaceAll(/\s+/, ' ')
-    value = value.replaceFirst(/^[A-Za-z]+,\s*/, '')
-    for (String pattern : ['MMMM d, uuuu h:mm:ss a', 'MMMM d, uuuu h:mm a', 'd MMMM uuuu HH:mm:ss', 'uuuu-MM-dd HH:mm:ss']) {
+    def offset = value =~ /(?i)\((?:UTC|GMT)\s*([+-]\d{2}:?\d{2})\)/
+    if (offset.find()) {
+        zone = ZoneOffset.of(offset.group(1))
+        value = value.substring(0, offset.start()).trim()
+    } else {
+        def suffix = value =~ /(?i)\s+(?:(?:UTC|GMT)\s*)?([+-]\d{2}:?\d{2})$/
+        if (suffix.find()) {
+            zone = ZoneOffset.of(suffix.group(1))
+            value = value.substring(0, suffix.start()).trim()
+        } else if ((value =~ /(?i)\s+(UTC|GMT)$/).find()) {
+            zone = ZoneOffset.UTC
+            value = value.replaceFirst(/(?i)\s+(UTC|GMT)$/, '').trim()
+        }
+    }
+    value = value.replaceFirst(/(?i)^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b,?\s*/, '')
+    List patterns = []
+    // Numeric dates are intentionally not guessed. Configure d/M/uuuu or M/d/uuuu explicitly.
+    if (customPattern) patterns << customPattern
+    for (String date : ['MMMM d, uuuu','MMMM d uuuu','MMM d, uuuu','MMM d uuuu','d MMMM uuuu','d MMM uuuu','d MMMM, uuuu','d MMM, uuuu','uuuu-MM-dd']) {
+        for (String time : ['h:mm:ss a','h:mm a','HH:mm:ss','HH:mm']) patterns << date + ' ' + time
+    }
+    for (String pattern : patterns) {
         try {
             def fmt = new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(pattern).toFormatter(Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT)
             return LocalDateTime.parse(value, fmt).atZone(zone).toInstant()
         } catch (java.time.format.DateTimeParseException ignored) { }
     }
-    throw new IllegalArgumentException('Unsupported original Sent timestamp; use EventTimestampOverride with ISO timestamp and offset')
+    throw new IllegalArgumentException('Unsupported original Sent timestamp. Check the original Sent line; configure SentDatePattern for numeric/custom dates (for example d/M/uuuu h:mm a). No processing-time fallback is used.')
 }
 
 String readLog(InputStream stream, String fallbackCharset) {

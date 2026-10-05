@@ -6,6 +6,7 @@ Message processData(Message message) {
         TargetSchema: 'REPLACE_WITH_OPEN_SQL_SCHEMA',
         TargetTable: 'IBP_Cronacle_Status',
         SourceTimeZone: 'Asia/Kolkata',
+        SentDatePattern: '', // Optional explicit numeric format, e.g. dd/MM/uuuu h:mm a
         StorageTimeZone: 'UTC',
         AttachmentCharset: 'UTF-8',
         ReasonOverflowPolicy: 'FAIL'

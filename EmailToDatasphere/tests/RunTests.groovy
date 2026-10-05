@@ -130,6 +130,46 @@ test('Only requested business fields plus required ID are mapped') {
     assert !m.body.contains('modifiedBy')
     assert !m.body.contains('createdAt')
 }
+test('Outlook day-first, abbreviated months, Unicode spaces and adjacent header') {
+    ['Monday, 5 October 2026 10:55 AM', 'Mon 5 Oct 2026 10:55 AM',
+     'October 5 2026 10:55 AM', 'Monday, October 5, 2026 10:55\u202fAM',
+     '\u200eMonday, 5 October 2026 10:55 AM\u200f',
+     '5 October 2026 10:55 AM To: Example recipient'].each { input ->
+        assert extract.parseSent(input, java.time.ZoneId.of('Asia/Kolkata')).toString() == '2026-10-05T05:25:00Z'
+    }
+}
+test('Additional explicit timezone and ISO formats') {
+    ['5 October 2026 10:55 AM (GMT+0530) Example timezone',
+     '5 Oct 2026 10:55 AM +05:30',
+     '2026-10-05T10:55:00+05:30',
+     'Mon, 5 Oct 2026 10:55:00 +0530'].each { input ->
+        assert extract.parseSent(input, java.time.ZoneId.of('UTC')).toString() == '2026-10-05T05:25:00Z'
+    }
+    assert extract.parseSent('5 Oct 2026 10:55 AM UTC', java.time.ZoneId.of('Asia/Kolkata')).toString() == '2026-10-05T10:55:00Z'
+}
+test('Numeric dates require explicit date order; invalid dates still fail') {
+    def zone=java.time.ZoneId.of('Asia/Kolkata')
+    failure { extract.parseSent('05/10/2026 10:55 AM', zone) }
+    assert extract.parseSent('05/10/2026 10:55 AM', zone, 'dd/MM/uuuu h:mm a').toString() == '2026-10-05T05:25:00Z'
+    assert extract.parseSent('05/10/2026 10:55 AM', zone, 'MM/dd/uuuu h:mm a').toString() == '2026-05-10T05:25:00Z'
+    failure { extract.parseSent('30 February 2026 10:55 AM', zone) }
+}
+test('Regression: Word Outlook HTML Sent 08 September 2026 10:17') {
+    // Same markup/date structure as the failing email; organizational data anonymized.
+    String html = '''<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><style>p.MsoNormal {margin:0cm;}</style></head>
+    <body lang="EN-IN"><div class="WordSection1"><p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+    <div><div><p class="MsoNormal"><b><span lang="EN-US">From:</span></b><span lang="EN-US"> Example sender &lt;sender@example.invalid&gt;<br>
+    <b>Sent:</b> 08 September 2026 10:17<br><b>To:</b> Example recipient &lt;recipient@example.invalid&gt;<br>
+    <b>Subject:</b> Alert: Example allocations with status Completed<o:p></o:p></span></p></div></div>
+    <p class="MsoNormal"><span lang="EN-US">A Cronacle Chain <b>CHAIN_EXAMPLE_ALLOCATIONS</b> [100000003] has ended with status: <b><span style="color:#8F0038">Completed</span></b>.<o:p></o:p></span></p></div></body></html>'''
+    def m=make(html); extract.processData(m)
+    assert m.properties.CronacleRow.P_CHAIN=='CHAIN_EXAMPLE_ALLOCATIONS'
+    assert m.properties.CronacleRow.Status=='Completed'
+    assert m.properties.CronacleRow.Date=='2026-09-08'
+    assert m.properties.CronacleRow.Time=='2026-09-08 04:47:00.0000000'
+    assert m.properties.CronacleTimestampSource=='Forwarded Sent'
+}
 new File('examples').mkdirs()
 def example=make(error); example.attachments.x=attachment('ErrorLog.txt',"Example failure: source file isn't available.")
 extract.processData(example)
