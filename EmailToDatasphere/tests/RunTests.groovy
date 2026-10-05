@@ -170,6 +170,14 @@ test('Regression: Word Outlook HTML Sent 08 September 2026 10:17') {
     assert m.properties.CronacleRow.Time=='2026-09-08 04:47:00.0000000'
     assert m.properties.CronacleTimestampSource=='Forwarded Sent'
 }
+test('HTML extraction without desktop APIs: entities, comments and quoted attributes') {
+    assert extract.plainText('<p title="a > b">CHAIN_<b>A</b>_&amp;_B &#38; &#x26; &lt;literal&gt;</p>').trim() == 'CHAIN_A_&_B & & <literal>'
+    assert extract.plainText('<html><head><style>hidden</style></head><body><!-- hidden --><script>hidden</script><p>visible</p></body></html>').trim() == 'visible'
+    assert extract.plainText('<p>&amp;lt; &#x1F600; &#999999999999; &unknown;</p>').trim() == '&lt; ' + new String(Character.toChars(0x1F600)) + ' &#999999999999; &unknown;'
+    assert extract.plainText('plain <source> & text') == 'plain <source> & text'
+    String source = new File('src/main/resources/script/ExtractCronacleAlert.groovy').getText('UTF-8')
+    assert !source.contains('javax.swing') && !source.contains('sun.awt') && !source.contains('ParserDelegator')
+}
 new File('examples').mkdirs()
 def example=make(error); example.attachments.x=attachment('ErrorLog.txt',"Example failure: source file isn't available.")
 extract.processData(example)

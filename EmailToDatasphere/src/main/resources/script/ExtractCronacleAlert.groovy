@@ -3,9 +3,6 @@ import groovy.json.JsonOutput
 import java.time.*
 import java.time.format.*
 import java.nio.charset.*
-import javax.swing.text.html.HTML
-import javax.swing.text.html.HTMLEditorKit
-import javax.swing.text.html.parser.ParserDelegator
 
 // The Mail adapter must provide the decoded body and attachments (not raw MIME).
 Message processData(Message message) {
@@ -87,25 +84,35 @@ Message processData(Message message) {
 
 String plainText(String body) {
     if (!(body =~ /(?is)<(?:html|body|div|p|br|span|table|b|strong)\b/).find()) return body
-    StringBuilder out = new StringBuilder()
-    int suppressed = 0
-    def callback = new HTMLEditorKit.ParserCallback() {
-        void handleText(char[] data, int pos) { if (suppressed == 0) out.append(data) }
-        void handleStartTag(HTML.Tag tag, javax.swing.text.MutableAttributeSet attrs, int pos) {
-            if (tag.toString() in ['script','style']) suppressed++
-            if (tag.toString() in ['p','div','tr','table','blockquote']) out.append('\n')
-        }
-        void handleEndTag(HTML.Tag tag, int pos) {
-            if (tag.toString() in ['script','style']) suppressed = Math.max(0, suppressed - 1)
-            if (tag.toString() in ['p','div','tr','table','blockquote']) out.append('\n')
-            if (tag.toString() in ['td','th']) out.append(' ')
-        }
-        void handleSimpleTag(HTML.Tag tag, javax.swing.text.MutableAttributeSet attrs, int pos) {
-            if (tag == HTML.Tag.BR) out.append('\n')
-        }
+    // Text extraction for Outlook alert markup, not a general HTML renderer.
+    // Uses only core string/regex APIs: no Swing, AWT, XML entities or external resources.
+    String text = body.replaceAll(/(?s)<!--.*?-->/, '')
+        .replaceAll(/(?is)<(head|script|style)\b[^>]*>.*?<\/\1\s*>/, '')
+    // Quoted attribute values may contain '>'; do not end a tag inside them.
+    def tags = ~/(?is)<\/?[A-Za-z][A-Za-z0-9:_-]*(?:"[^"]*"|'[^']*'|[^'">])*>/
+    text = text.replaceAll(tags) { String tag ->
+        def name = (tag =~ /(?is)^<\/?([A-Za-z][A-Za-z0-9:_-]*)/)
+        name.find()
+        String local = name.group(1).toLowerCase(Locale.ROOT)
+        if (local in ['br','p','div','tr','table','blockquote','li','hr']) return '\n'
+        if (local in ['td','th']) return ' '
+        return ''
     }
-    new ParserDelegator().parse(new StringReader(body), callback, true)
-    return out.toString().replace('\u00a0', ' ')
+    // Decode AFTER stripping markup so escaped text is never interpreted as a tag.
+    Map entities = [amp:'&', lt:'<', gt:'>', quot:'"', apos:"'", nbsp:' ',
+                    ensp:' ', emsp:' ', thinsp:' ', ndash:'\u2013', mdash:'\u2014',
+                    lsquo:'\u2018', rsquo:'\u2019', ldquo:'\u201c', rdquo:'\u201d',
+                    lrm:'', rlm:'', bull:'\u2022', hellip:'\u2026']
+    text = text.replaceAll(/&(#(?:[xX][0-9a-fA-F]+|[0-9]+)|[A-Za-z][A-Za-z0-9]+);/) { String whole, String entity ->
+        if (!entity.startsWith('#')) return entities.containsKey(entity) ? entities[entity] : whole
+        try {
+            boolean hex = entity.length() > 2 && entity.substring(1,2).equalsIgnoreCase('x')
+            int cp = Integer.parseInt(entity.substring(hex ? 2 : 1), hex ? 16 : 10)
+            if (!Character.isValidCodePoint(cp) || (cp >= 0xD800 && cp <= 0xDFFF) || cp == 0) return whole
+            return new String(Character.toChars(cp))
+        } catch (NumberFormatException ignored) { return whole }
+    }
+    return text.replace('\u00a0', ' ').replace('\u202f', ' ')
 }
 
 Instant parseSent(String input, ZoneId defaultZone, String customPattern = '') {

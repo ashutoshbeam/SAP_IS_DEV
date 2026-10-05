@@ -41,6 +41,8 @@ The screenshot defines the composite primary key as `ID`, `P_CHAIN`, `Date`, `Ti
 
 ## Parsing and time rules
 
+HTML extraction uses core string/regex operations without Swing, AWT, or internal Java desktop classes. This removes the `ParserDelegator` / `sun.awt.AppContext` module-access failure observed in the SAP runtime. It supports the Outlook alert markup covered by the tests, not arbitrary HTML rendering. Replace the full extraction script when upgrading, including its imports.
+
 The timestamp parser supports English day-first and month-first Outlook dates, abbreviated months, 12/24-hour clocks, Unicode spaces, RFC timestamps and ISO offset timestamps. Numeric dates are not guessed. Set the optional `SentDatePattern` exchange property (or configuration-script setting) to the actual format, for example `dd/MM/uuuu h:mm a` for day/month/year. Use `uuuu` for the year with strict parsing. For a deployed iFlow, replace only `ExtractCronacleAlert.groovy`, save and redeploy; keep your existing connection and schema settings. Add `SentDatePattern` only when needed. A real failing Sent line is needed to confirm any particular production parsing failure.
 
 - Supports plain text and HTML, including bold spans, entities and names containing `&`.
