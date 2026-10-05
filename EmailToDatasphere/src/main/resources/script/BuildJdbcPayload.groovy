@@ -4,7 +4,7 @@ def processData(def message) {
     Map cfg = message.getProperties()
     Map row = cfg.CronacleRow as Map
     if (!row) throw new IllegalArgumentException('Run ExtractCronacleAlert before BuildJdbcPayload')
-    String schema = cfg.TargetSchema?.toString()
+    String schema = (cfg.TargetSchema ?: 'TBL_MNT_HDI').toString()
     String table = (cfg.TargetTable ?: 'IBP_Cronacle_Status').toString()
     if (!schema) throw new IllegalArgumentException('Set TargetSchema to the writable Open SQL schema')
     String target = identifier(schema) + '.' + identifier(table)

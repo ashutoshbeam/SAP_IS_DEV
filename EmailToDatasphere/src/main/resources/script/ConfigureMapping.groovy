@@ -2,7 +2,7 @@
 def processData(def message) {
     // Set your actual writable schema here after import. No credentials belong here.
     Map defaults = [
-        TargetSchema: 'REPLACE_WITH_OPEN_SQL_SCHEMA',
+        TargetSchema: 'TBL_MNT_HDI',
         TargetTable: 'IBP_Cronacle_Status',
         SourceTimeZone: 'Asia/Kolkata',
         SentDatePattern: '', // Optional explicit numeric format, e.g. dd/MM/uuuu h:mm a

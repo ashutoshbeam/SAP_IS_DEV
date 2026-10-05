@@ -42,7 +42,7 @@ Mail (IMAP) -> Start -> ConfigureMapping -> ExtractCronacleAlert
 
 3. Select unread messages. Use **Mark as Read** or archive only after successful processing; configure error retries and monitoring in your tenant. Keep attachment logging/tracing off for production.
 
-4. In `ConfigureMapping.groovy`, replace `REPLACE_WITH_OPEN_SQL_SCHEMA` with your actual writable schema. `TargetTable` defaults to `IBP_Cronacle_Status`, with exact case preserved. These are identifiers, not credentials.
+4. In `ConfigureMapping.groovy`, the target schema is configured as `TBL_MNT_HDI`. `TargetTable` defaults to `IBP_Cronacle_Status`, with exact case preserved. `BuildJdbcPayload.groovy` has the same defaults; explicit exchange properties can override them. These are identifiers, not credentials.
 
 5. Connect End to the Receiver participant and choose **JDBC**. Configure the HANA Cloud JDBC Data Source Alias. Use non-batch XML SQL processing; the mapping emits a `SQL_DML` envelope containing one HANA `MERGE`. Leave prepared-statement/inline-function options off for this literal SQL payload.
 
