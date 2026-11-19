@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><parameters><parameter>
+    <key/>
+    <name>TGTDataSrc</name>
+    <type>xsd:string</type>
+    <isRequired>false</isRequired>
+    <constraint/>
+    <description/>
+    <additionalMetadata/>
+  </parameter><parameter>
+    <key/>
+    <name>oDataSACAct</name>
+    <type>xsd:string</type>
+    <isRequired>false</isRequired>
+    <constraint/>
+    <description/>
+    <additionalMetadata/>
+  </parameter><parameter>
+    <key/>
+    <name>oDataSACAuth</name>
+    <type>xsd:string</type>
+    <isRequired>false</isRequired>
+    <constraint/>
+    <description/>
+    <additionalMetadata/>
+  </parameter><parameter>
+    <key/>
+    <name>oDataToken</name>
+    <type>xsd:string</type>
+    <isRequired>false</isRequired>
+    <constraint/>
+    <description/>
+    <additionalMetadata/>
+  </parameter><param_references><reference attribute_category="RCV_SAC_oAuth.Receiver.Auth" attribute_id="ctype::AdapterVariant/cname::HTTP/tp::HTTP/mp::None/direction::Receiver/version::1.16.2/attrId::credentialName" attribute_uilabel="Credential Name" param_key="oDataToken"/><reference attribute_category="RCV_SAC_oAuth" attribute_id="ctype::AdapterVariant/cname::HTTP/tp::HTTP/mp::None/direction::Receiver/version::1.16.2/attrId::httpAddressWithoutQuery" attribute_uilabel="Address" param_key="oDataSACAuth"/><reference attribute_category="RCV_DS_SQL_SP_Update.Auth" attribute_id="ctype::Adapter/cname::JDBC/vendor::SAP/version::1.5.3/attrId::alias" attribute_uilabel="JDBC Data Source Alias" param_key="TGTDataSrc"/><reference attribute_category="RCV_SAC_Activities" attribute_id="ctype::AdapterVariant/cname::HTTP/tp::HTTP/mp::None/direction::Receiver/version::1.16.2/attrId::httpAddressWithoutQuery" attribute_uilabel="Address" param_key="oDataSACAct"/></param_references></parameters>

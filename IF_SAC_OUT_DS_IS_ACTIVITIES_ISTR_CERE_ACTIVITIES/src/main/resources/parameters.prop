@@ -1,0 +1,6 @@
+#
+#Thu Nov 19 08:21:56 UTC 2026
+TGTDataSrc=Datasphere_INOUT_IS
+oDataSACAct=https\://sgs-sac-prd.us21.hcs.cloud.sap/api/v1/audit/activities/exportActivities
+oDataSACAuth=https\://sgs-sac-prd.authentication.us21.hana.ondemand.com/oauth/token
+oDataToken=SAC_TOKEN

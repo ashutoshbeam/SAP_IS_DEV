@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Created with Liquid Technologies Online Tools 1.0 (https://www.liquid-technologies.com) -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ISTR_CERE_ACTIVITIES">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="dbTableName">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="access" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element minOccurs="0" name="ObjectType" />
+                          <xs:element minOccurs="0" name="FileName" />
+                          <xs:element minOccurs="0" name="ObjectName" />
+                          <xs:element minOccurs="0" name="Description" />
+                          <xs:element minOccurs="0" name="UserName" />
+                          <xs:element minOccurs="0" name="Activity" />
+                          <xs:element minOccurs="0" name="Status" />
+                          <xs:element minOccurs="0" name="Timestamp" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
