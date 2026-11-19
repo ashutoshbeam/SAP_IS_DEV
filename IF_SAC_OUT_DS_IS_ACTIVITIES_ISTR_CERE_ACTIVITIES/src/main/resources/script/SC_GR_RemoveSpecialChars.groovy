@@ -67,6 +67,12 @@ String normalizeCsv(String csv) {
             value = csv.substring(start, pos)
         }
         fields.add(value)
+        // Previous/Current Value contain non-CSV-escaped JSON in SAC exports.
+        // They are not mapped downstream: discard the physical-line suffix
+        // immediately after Timestamp, without attempting to parse its quotes.
+        if (fields.size() == 8 && pos < csv.length() && csv.charAt(pos) == ',' as char) {
+            while (pos < csv.length() && csv.charAt(pos) != '\r' as char && csv.charAt(pos) != '\n' as char) pos++
+        }
         if (pos < csv.length() && csv.charAt(pos) == ',' as char) {
             pos++
             if (pos < csv.length() && csv.charAt(pos) != '\r' as char && csv.charAt(pos) != '\n' as char) continue
